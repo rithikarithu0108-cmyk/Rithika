@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>E-commerce Dashboard</title>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial;
+}
+
+/* DARK MODE DEFAULT */
+body {
+  background: #1e1e2f;
+  color: white;
+}
+
+/* LOGIN */
+#loginPage {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #111827;
+}
+
+.login-box {
+  background: #2c2c3c;
+  padding: 30px;
+  border-radius: 10px;
+}
+
+.login-box input {
+  display: block;
+  margin: 10px 0;
+  padding: 10px;
+  width: 200px;
+}
+
+.login-box button {
+  padding: 10px;
+  width: 100%;
+  background: #4f46e5;
+  color: white;
+  border: none;
+}
+
+/* DASHBOARD */
+#dashboard {
+  display: none;
+}
+
+.container {
+  display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  height: 100vh;
+  background: #111827;
+  padding: 20px;
+  position: fixed;
+  transition: 0.3s;
+}
+
+.sidebar h2 {
+  margin-bottom: 20px;
+}
+
+.sidebar ul li {
+  margin: 15px 0;
+  cursor: pointer;
+}
+
+/* Main */
+.main {
+  margin-left: 220px;
+  padding: 20px;
+  width: 100%;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+/* Cards */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.card {
+  background: #2c2c3c;
+  padding: 20px;
+  border-radius: 10px;
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+/* Table */
+table {
+  width: 100%;
+  margin-top: 20px;
+  background: #2c2c3c;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #444;
+}
+
+/* Chart */
+.chart-container {
+  margin-top: 30px;
+  background: #2c2c3c;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .sidebar {
+    left: -100%;
+  }
+
+  .sidebar.show {
+    left: 0;
+  }
+
+  .main {
+    margin-left: 0;
+  }
+
+  .cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="login-box">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p id="error" style="color:red;"></p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+<div class="container">
+
+  <aside class="sidebar">
+    <h2>ShopAdmin</h2>
+    <ul>
+      <li>Dashboard</li>
+      <li>Products</li>
+      <li>Orders</li>
+      <li>Customers</li>
+    </ul>
+  </aside>
+
+  <div class="main">
+
+    <div class="header">
+      <button onclick="toggleMenu()">☰</button>
+      <h3>Dashboard</h3>
+    </div>
+
+    <!-- Cards -->
+    <div class="cards">
+      <div class="card">Sales<br><strong id="sales">₹50000</strong></div>
+      <div class="card">Orders<br><strong id="orders">120</strong></div>
+      <div class="card">Customers<br><strong id="customers">80</strong></div>
+      <div class="card">Products<br><strong id="products">45</strong></div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-container">
+      <canvas id="myChart"></canvas>
+    </div>
+
+    <!-- Table -->
+    <table>
+      <tr>
+        <th>Order</th>
+        <th>Customer</th>
+        <th>Status</th>
+      </tr>
+      <tr>
+        <td>#101</td>
+        <td>Ravi</td>
+        <td>Delivered</td>
+      </tr>
+      <tr>
+        <td>#102</td>
+        <td>Priya</td>
+        <td>Pending</td>
+      </tr>
+    </table>
+
+  </div>
+</div>
+</div>
+
+<script>
+// LOGIN
+function login() {
+  let user = document.getElementById("username").value;
+  let pass = document.getElementById("password").value;
+
+  if (user === "admin" && pass === "1234") {
+    document.getElementById("loginPage").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+    initChart();
+  } else {
+    document.getElementById("error").innerText = "Invalid Login!";
+  }
+}
+
+// MOBILE MENU
+function toggleMenu() {
+  document.querySelector(".sidebar").classList.toggle("show");
+}
+
+// LIVE DATA
+let sales = 50000;
+let orders = 120;
+let customers = 80;
+
+function updateData() {
+  sales += Math.floor(Math.random() * 1000);
+  orders += Math.floor(Math.random() * 10);
+  customers += Math.floor(Math.random() * 5);
+
+  document.getElementById("sales").innerText = "₹" + sales;
+  document.getElementById("orders").innerText = orders;
+  document.getElementById("customers").innerText = customers;
+
+  chart.data.datasets[0].data.push(sales);
+  chart.data.labels.push("");
+  chart.update();
+}
+
+setInterval(updateData, 3000);
+
+// CHART
+let chart;
+
+function initChart() {
+  const ctx = document.getElementById("myChart").getContext("2d");
+
+  chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: ["Start"],
+      datasets: [{
+        label: "Sales Growth",
+        data: [50000],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true
+    }
+  });
+}
+
+// ALERT
+setTimeout(() => {
+  alert("Welcome Admin!");
+}, 2000);
+</script>
+
+</body>
+</html>
